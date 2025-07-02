@@ -48,13 +48,15 @@ public class KycService {
         // customRepo.save(c);
         redis.opsForValue().set("email:" + username, token, TOKEN_TTL);
         String link = String.format("http://localhost:8080/api/kyc/verify-email?username=%s&token=%s", username, token);
-        String html = "<p>Please verify your email by <a href=\"" + link + "\">clicking here</a>.<br>" + "This link expires in 10 minutes.</p>";
+        String html = "<p>Please verify your email by <a href=\"" + link + "\">clicking here</a>.<br>"
+                + "This link expires in 10 minutes.</p>";
         emailSender.send(email, "Verify Your email", html);
         log(username, "Email_request", username);
     }
 
     public void verifyEmailToken(String username, String token) {
-        Customer c = customRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("No customer found with username:" + username));
+        Customer c = customRepo.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("No customer found with username:" + username));
 
         String storedToken = redis.opsForValue().get("email:" + username);
 
@@ -88,7 +90,8 @@ public class KycService {
     }
 
     public void verifyKycToken(String username, String token) {
-        Customer c = customRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("username not found "));
+        Customer c = customRepo.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("username not found "));
 
         String storedToken = redis.opsForValue().get("kyc: " + username);
         if (!token.equals(storedToken)) {
@@ -100,6 +103,21 @@ public class KycService {
         customRepo.save(c);
         redis.delete("kyc: " + username);
         log(username, "KYC_VERIFIED", username);
+    }
+
+    public String issueVideoKycLink(String username) {
+        Customer c = customRepo.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        String roomId = UUID.randomUUID().toString();
+        redis.opsForValue().set("room:" + username, roomId, Duration.ofMinutes(30));
+
+        String link = String.format("http://localhost:4200/kyc-room/%s", roomId);
+        emailSender.send(
+                c.getEmail(),
+                "Join Your Video KYC",
+                "<p>Join your video KYC by <a href=\"" + link + "\">clicking here</a>.</p>");
+        log(username, "VIDEO_KYC_LINK", username);
+        return link;
     }
 
 }

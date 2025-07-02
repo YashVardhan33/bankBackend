@@ -50,4 +50,13 @@ public class KycController {
         kycService.verifyKycToken(username, token);
         return ResponseEntity.ok(new MessageResponse("KYC completed."));
     }
+
+
+
+    @GetMapping("/ekyc")
+    public String videoKyc (@RequestParam String username){
+        kycService.issueVideoKycLink(username);
+
+        return "Email Sent";
+    }
 }

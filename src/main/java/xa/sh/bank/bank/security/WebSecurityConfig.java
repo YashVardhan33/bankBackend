@@ -82,7 +82,7 @@ public class WebSecurityConfig {
             .exceptionHandling(exception->exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth->
-                            auth.requestMatchers("/api/signin","/api/signup","/api/signin/atm-unlock","/api/kyc/**").permitAll()
+                            auth.requestMatchers("/api/signin","/api/signup","/api/signin/atm-unlock","/api/kyc/**","/ws/**").permitAll()
                             .requestMatchers("/error").permitAll()
                             .requestMatchers("/admin/**").hasRole("ADMIN")
                             .requestMatchers("/customer/**").hasRole("CUSTOMER")
